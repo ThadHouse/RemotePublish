@@ -1,5 +1,37 @@
 plugins {
   id 'base'
+  id 'maven-publish'
+  id "de.undercouch.download" version "3.4.3"
+}
+
+task downloadFile(type: Download) {
+    src 'https://github.com/wpilibsuite/frc-openjdk-roborio/releases/download/v2019-11.0.0u28-1/frc2019-openjdk-11-jre_11.0.0u28-1_cortexa9-vfpv3.ipk'
+    dest buildDir
+}
+
+publishing {
+    repositories {
+        maven {
+            url "${System.getProperty('user.home')}/releases/maven/development"
+        }
+        maven {
+            url "${System.getProperty('user.home')}/releases/maven/release"
+        }
+    }
+}
+
+publishing {
+  publications {
+    jre(MavenPublication) {
+      artifact ("$buildDir/frc2019-openjdk-11-jre_11.0.0u28-1_cortexa9-vfpv3.ipk") {
+        builtBy downloadFile
+      }
+
+      groupId = 'edu.wpi.first.jdk'
+      artifactId = 'roborio-2019'
+      version = '11.0.0u28-1'
+    }
+  }
 }
 
 wrapper {
