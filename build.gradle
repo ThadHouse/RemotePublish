@@ -1,12 +1,28 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.paleozogt:republish-plugin:0.1.4'
+    }
+}
 plugins {
   id 'base'
   id 'maven-publish'
   id "de.undercouch.download" version "3.4.3"
 }
+apply plugin: 'org.paleozogt.republish'
 
 task downloadFile(type: Download) {
-    src 'https://github.com/wpilibsuite/frc-openjdk-roborio/releases/download/v2019-11.0.0u28-1/frc2019-openjdk-11-jre_11.0.0u28-1_cortexa9-vfpv3.ipk'
+    src 'https://ci.appveyor.com/api/buildjobs/xt8l8pay01tto0gu/artifacts/maven.zip'
     dest buildDir
+}
+
+task extractFile(type: Copy) {
+    dependsOn downloadFile
+    from zipTree(file("$buildDir/maven.zip"))
+    into buildDir
 }
 
 publishing {
@@ -22,18 +38,21 @@ publishing {
 
 publishing {
   publications {
-    jre(MavenPublication) {
-      artifact ("$buildDir/frc2019-openjdk-11-jre_11.0.0u28-1_cortexa9-vfpv3.ipk") {
-        builtBy downloadFile
-      }
-
-      groupId = 'edu.wpi.first.jdk'
-      artifactId = 'roborio-2019'
-      version = '11.0.0u28-1'
+    javafx(MavenPublication) {
+      groupId 'edu.wpi.first.openjfx'
+      artifactId 'javafx'
+      version '11'
     }
   }
 }
 
+republish {
+    paths = [ file("$buildDir/repository") ]                    // pull from the libs folder, which has artifacts and POMs
+}
+afterEvaluate {
+  build.dependsOn republishToMavenRepository
+  build.dependsOn republishToMaven2Repository
+}
 build.dependsOn publish
 
 wrapper {
