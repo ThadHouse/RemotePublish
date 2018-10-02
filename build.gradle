@@ -49,6 +49,9 @@ publishing {
 republish {
     paths = [ file("$buildDir/repository") ]                    // pull from the libs folder, which has artifacts and POMs
 }
+
+tasks.matching {it != extractFile && it != downloadFile}.all {it.dependsOn extractFile}
+
 afterEvaluate {
   build.dependsOn republishToMavenRepository
   build.dependsOn republishToMaven2Repository
